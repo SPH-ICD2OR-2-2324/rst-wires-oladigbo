@@ -6,22 +6,11 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     if (cursorPos < 0) {
         cursorPos = wireCount - 1
     }
+    cursorPos = cursorPos % wireCount
     UpdateCursor()
 })
 function UpdateCursor () {
     cursor.top = Math.floor(120 / Ratio) * (cursorPos + 1) - 2
-}
-function startPhase () {
-    while (wireCount < 3 || wireCount > 6) {
-        wireCount = game.askForNumber("# of wires? (3-6)", 1)
-    }
-}
-function InitSerial () {
-    SerialNumber = game.askForNumber("Last Digit of Serial Number", 1)
-}
-function InitWirePhase () {
-    InitColours()
-    InitCursor()
 }
 controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     WireList[cursorPos] = WireList[cursorPos] - 1
@@ -38,6 +27,66 @@ controller.left.onEvent(ControllerButtonEvent.Pressed, function () {
     }
     mySprite2 = sprites.create(WireSprites[cursorPos], SpriteKind.Wire)
     mySprite2.top = Math.floor(120 / Ratio) * (cursorPos + 1)
+})
+function startPhase () {
+    while (wireCount < 3 || wireCount > 6) {
+        wireCount = game.askForNumber("# of wires? (3-6)", 1)
+    }
+}
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    if (wireCount == 3) {
+        if (WireList[0] != 0 && (WireList[1] != 0 && WireList[2] != 0)) {
+            game.splash("Cut the second wire")
+        } else if (WireList[2] == 1) {
+            game.splash("Cut the last wire")
+        } else if (WireList[0] == 2 || (WireList[1] == 2 || WireList[2] == 2)) {
+            game.splash("Cut the last blue wire")
+        } else {
+            game.splash("Cut the last wire")
+        }
+    } else if (wireCount == 4) {
+        if ((WireList[0] == 0 || WireList[1] == 0 || (WireList[2] == 0 || WireList[3] == 0)) && (SerialNumber == 1 || SerialNumber == 3 || SerialNumber == 5)) {
+            game.splash("Cut the last red wire")
+        } else if (WireList[3] == 3 && (WireList[0] != 0 && WireList[1] != 0 && (WireList[2] != 0 && WireList[3] != 0))) {
+            game.splash("Cut the first wire")
+        } else if (WireList[0] == 2 || WireList[1] == 2 || (WireList[2] == 2 || WireList[3] == 2)) {
+            game.splash("Cut the first wire")
+        } else if ((WireList[0] == 3 || WireList[1] == 3) && (WireList[2] == 3 || WireList[3] == 3)) {
+            game.splash("Cut the last wire")
+        } else {
+            game.splash("Cut the second wire")
+        }
+    } else if (wireCount == 5) {
+        if (WireList[4] == 4 && (SerialNumber == 1 || SerialNumber == 3 || SerialNumber == 5)) {
+            game.splash("Cut the fourth wire")
+        } else if ((WireList[0] == 0 || WireList[1] == 0 || (WireList[2] == 0 || WireList[3] == 0)) && (WireList[0] == 3 || WireList[1] == 3 || (WireList[2] == 3 || WireList[3] == 3))) {
+            game.splash("Cut the first wire")
+        } else if (WireList[0] != 4 && WireList[1] != 4 && (WireList[2] != 0 && WireList[3] != 4) && WireList[4] != 4) {
+            game.splash("Cut the second wire")
+        } else {
+            game.splash("Cut the first wire")
+        }
+    } else if (wireCount == 6) {
+        if (WireList[0] != 3 && WireList[1] != 3 && (WireList[2] != 3 && WireList[3] != 3) && (WireList[4] != 3 && WireList[5] != 3) && (SerialNumber == 1 || SerialNumber == 3 || SerialNumber == 5)) {
+            game.splash("Cut the third wire")
+        } else if ((WireList[0] == 3 || WireList[1] == 3 || (WireList[2] == 3 || WireList[3] == 3) || (WireList[4] == 3 || WireList[5] == 3)) && (WireList[0] == 1 || WireList[1] == 1 || (WireList[2] == 1 || WireList[3] == 0) || (WireList[4] == 1 || WireList[5] == 1))) {
+            game.splash("Cut the fourth wire")
+        } else if (WireList[0] != 0 && WireList[1] != 0 && (WireList[2] != 0 && WireList[3] != 0) && (WireList[4] != 0 && WireList[5] != 0)) {
+            game.splash("Cut the last wire")
+        } else {
+            game.splash("Cut the fourth wire")
+        }
+    }
+})
+function InitSerial () {
+    SerialNumber = game.askForNumber("Last Digit of Serial Number", 1)
+}
+function InitWirePhase () {
+    InitColours()
+    InitCursor()
+}
+sprites.onCreated(SpriteKind.Wire, function (sprite) {
+    sprite.setFlag(SpriteFlag.Ghost, true)
 })
 function InitCursor () {
     mySprite = img`
@@ -57,6 +106,11 @@ function InitCursor () {
     cursor.top = Math.floor(120 / Ratio) - 2
     cursorPos = 0
 }
+controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
+    cursorPos += 1
+    cursorPos = cursorPos % wireCount
+    UpdateCursor()
+})
 function InitColours () {
     colourList = [
     2,
@@ -97,21 +151,13 @@ controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     mySprite2 = sprites.create(WireSprites[cursorPos], SpriteKind.Wire)
     mySprite2.top = Math.floor(120 / Ratio) * (cursorPos + 1)
 })
-sprites.onCreated(SpriteKind.Wire, function (sprite) {
-    sprite.setFlag(SpriteFlag.Ghost, true)
-})
-controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
-    cursorPos += 1
-    cursorPos = cursorPos % wireCount
-    UpdateCursor()
-})
 let mySprite: Image = null
+let SerialNumber = 0
 let mySprite2: Sprite = null
 let sprite_list: Sprite[] = []
 let WireSprites: Image[] = []
 let colourList: number[] = []
 let WireList: number[] = []
-let SerialNumber = 0
 let Ratio = 0
 let cursor: Sprite = null
 let cursorPos = 0
